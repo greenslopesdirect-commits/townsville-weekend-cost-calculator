@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Townsville Weekend Cost Calculator</title>
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #f8f9fa;
+      color: #333;
+    }
+
+    .container {
+      max-width: 620px;
+      margin: auto;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #007bff;
+      font-weight: 300;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #6c757d;
+      margin-bottom: 25px;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 10px rgba(0,0,0,.08);
+    }
+
+    label {
+      font-weight: 600;
+      color: #007bff;
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    .question { margin-bottom: 22px; }
+
+    select, input[type="email"] {
+      width: 100%;
+      padding: 12px;
+      border-radius: 8px;
+      border: 2px solid #e9ecef;
+      font-size: 1rem;
+    }
+
+    .radio-group label {
+      display: flex;
+      align-items: center;
+      padding: 8px;
+      cursor: pointer;
+    }
+
+    .radio-group input { margin-right: 8px; }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1.1rem;
+      cursor: pointer;
+    }
+
+    .primary { background: #007bff; color: white; }
+    .primary:hover { background: #0056b3; }
+
+    .success { background: #28a745; color: white; }
+    .success:hover { background: #218838; }
+
+    .center { text-align: center; }
+
+    .locked-preview {
+      background: linear-gradient(135deg,#007bff,#6c757d);
+      color: white;
+      padding: 40px 20px;
+      border-radius: 12px;
+      margin: 20px 0;
+    }
+
+    .results { display: none; }
+
+    .total {
+      font-size: 2.6rem;
+      color: #007bff;
+      font-weight: bold;
+      text-align: center;
+      margin: 20px 0;
+    }
+
+    .breakdown div {
+      display: flex;
+      justify-content: space-between;
+      padding: 12px;
+      background: #f1f3f5;
+      border-radius: 8px;
+      margin-bottom: 10px;
+    }
+
+    .insight {
+      background: #e9ecef;
+      padding: 16px;
+      border-radius: 8px;
+      margin-top: 20px;
+      font-style: italic;
+    }
+
+    .small {
+      font-size: .85rem;
+      color: #6c757d;
+      margin-top: 10px;
+    }
+
+    .hidden { display: none; }
+  </style>
+</head>
+
+<body>
+<div class="container">
+
+  <h1>Townsville Weekend Cost Calculator</h1>
+  <p class="subtitle">Estimate the real cost of a Townsville weekend in under 30 seconds.</p>
+
+  <!-- FORM -->
+  <div id="form" class="card">
+    <div class="question">
+      <label>Adults</label>
+      <select id="adults">
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+      </select>
+    </div>
+
+    <div class="question">
+      <label>Kids</label>
+      <select id="kids">
+        <option value="0">0</option>
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+      </select>
+    </div>
+
+    <div class="question">
+      <label>Transport</label>
+      <div class="radio-group">
+        <label><input type="radio" name="transport" value="walk" checked> Walking / Cycling</label>
+        <label><input type="radio" name="transport" value="drive"> Driving</label>
+        <label><input type="radio" name="transport" value="ferry"> Ferry (Magnetic Island)</label>
+      </div>
+    </div>
+
+    <div class="question">
+      <label>Eating Out</label>
+      <div class="radio-group">
+        <label><input type="radio" name="food" value="none" checked> None</label>
+        <label><input type="radio" name="food" value="one"> One meal</label>
+        <label><input type="radio" name="food" value="multi"> Multiple meals</label>
+      </div>
+    </div>
+
+    <div class="question">
+      <label>Paid Activities</label>
+      <div class="radio-group">
+        <label><input type="radio" name="activity" value="none" checked> None</label>
+        <label><input type="radio" name="activity" value="one"> One</label>
+        <label><input type="radio" name="activity" value="multi"> Multiple</label>
+      </div>
+    </div>
+
+    <button class="primary" onclick="calculate()">Calculate My Weekend Cost</button>
+  </div>
+
+  <!-- EMAIL GATE -->
+  <div id="gate" class="card hidden center">
+    <div class="locked-preview">
+      <h2>Your weekend cost is ready</h2>
+    </div>
+    <p>Enter your email to unlock your full breakdown.</p>
+    <input type="email" id="email" placeholder="you@example.com">
+    <button class="success" onclick="unlock()">Unlock My Cost Breakdown</button>
+    <p class="small">One email per week. Unsubscribe anytime.</p>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="results" class="card results">
+    <div class="total" id="total"></div>
+
+    <div class="breakdown">
+      <div><span>Transport</span><span id="tCost"></span></div>
+      <div><span>Food</span><span id="fCost"></span></div>
+      <div><span>Activities</span><span id="aCost"></span></div>
+      <div><strong>Total</strong><strong id="total2"></strong></div>
+      <div><span>Per Person</span><span id="pp"></span></div>
+    </div>
+
+    <div class="insight" id="insight"></div>
+    <p class="small">Estimates only. Actual costs may vary.</p>
+
+    <button class="primary" onclick="location.reload()">Calculate Another Weekend</button>
+  </div>
+
+</div>
+
+<script>
+let calcData = {};
+
+function calculate() {
+  const a = +adults.value;
+  const k = +kids.value;
+  const t = document.querySelector('[name=transport]:checked').value;
+  const f = document.querySelector('[name=food]:checked').value;
+  const ac = document.querySelector('[name=activity]:checked').value;
+
+  let transport = t === "drive" ? 20 : t === "ferry" ? (a*30 + k*15) : 0;
+  let food = f === "one" ? (a*30 + k*15) : f === "multi" ? (a*60 + k*30) : 0;
+  let act = ac === "one" ? (a*25 + k*15) : ac === "multi" ? (a*50 + k*30) : 0;
+
+  calcData.total = transport + food + act;
+  calcData.transport = transport;
+  calcData.food = food;
+  calcData.activity = act;
+  calcData.people = a + k;
+
+  form.classList.add("hidden");
+  gate.classList.remove("hidden");
+}
+
+function unlock() {
+  if (!email.value.includes("@")) {
+    alert("Please enter a valid email");
+    return;
+  }
+
+  gate.classList.add("hidden");
+  results.style.display = "block";
+
+  total.textContent = `$${calcData.total.toFixed(2)}`;
+  total2.textContent = `$${calcData.total.toFixed(2)}`;
+  tCost.textContent = `$${calcData.transport.toFixed(2)}`;
+  fCost.textContent = `$${calcData.food.toFixed(2)}`;
+  aCost.textContent = `$${calcData.activity.toFixed(2)}`;
+  pp.textContent = `$${(calcData.total / calcData.people).toFixed(2)}`;
+
+  const tips = [
+    "Free activities can significantly reduce weekend costs.",
+    "Limiting meals out keeps budgets under control.",
+    "Walking or cycling eliminates transport costs."
+  ];
+  insight.textContent = tips[Math.floor(Math.random() * tips.length)];
+}
+</script>
+
+</body>
+</html>
