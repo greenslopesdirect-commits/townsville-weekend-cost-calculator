@@ -5,6 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Townsville Weekend Cost Calculator</title>
 
+  <!-- EmailJS -->
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <script>
+    (function () {
+      emailjs.init("YOUR_PUBLIC_KEY"); 
+      // ↑ REPLACE with your EmailJS PUBLIC KEY
+    })();
+  </script>
+
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -196,7 +205,7 @@
     <p>Enter your email to unlock your full breakdown.</p>
     <input type="email" id="email" placeholder="you@example.com">
     <button class="success" onclick="unlock()">Unlock My Cost Breakdown</button>
-    <p class="small">One email per week. Unsubscribe anytime.</p>
+    <p class="small">We’ll only use this to show your result.</p>
   </div>
 
   <!-- RESULTS -->
@@ -220,52 +229,74 @@
 </div>
 
 <script>
-let calcData = {};
-
-function calculate() {
-  const a = +adults.value;
-  const k = +kids.value;
-  const t = document.querySelector('[name=transport]:checked').value;
-  const f = document.querySelector('[name=food]:checked').value;
-  const ac = document.querySelector('[name=activity]:checked').value;
-
-  let transport = t === "drive" ? 20 : t === "ferry" ? (a*30 + k*15) : 0;
-  let food = f === "one" ? (a*30 + k*15) : f === "multi" ? (a*60 + k*30) : 0;
-  let act = ac === "one" ? (a*25 + k*15) : ac === "multi" ? (a*50 + k*30) : 0;
-
-  calcData.total = transport + food + act;
-  calcData.transport = transport;
-  calcData.food = food;
-  calcData.activity = act;
-  calcData.people = a + k;
-
-  form.classList.add("hidden");
-  gate.classList.remove("hidden");
-}
-
-function unlock() {
-  if (!email.value.includes("@")) {
-    alert("Please enter a valid email");
-    return;
+  // =====================
+  // EMAIL FUNCTION
+  // =====================
+  function sendAdminEmail(userEmail) {
+    emailjs.send(
+      "service_7425t1b",      // YOUR SERVICE ID
+      "template_9guxwwq",     // YOUR TEMPLATE ID
+      {
+        user_email: userEmail,
+        time: new Date().toLocaleString()
+      }
+    ).then(
+      () => console.log("Admin email sent"),
+      error => console.error("EmailJS error:", error)
+    );
   }
 
-  gate.classList.add("hidden");
-  results.style.display = "block";
+  // =====================
+  // CALCULATOR LOGIC
+  // =====================
+  let calcData = {};
 
-  total.textContent = `$${calcData.total.toFixed(2)}`;
-  total2.textContent = `$${calcData.total.toFixed(2)}`;
-  tCost.textContent = `$${calcData.transport.toFixed(2)}`;
-  fCost.textContent = `$${calcData.food.toFixed(2)}`;
-  aCost.textContent = `$${calcData.activity.toFixed(2)}`;
-  pp.textContent = `$${(calcData.total / calcData.people).toFixed(2)}`;
+  function calculate() {
+    const a = +adults.value;
+    const k = +kids.value;
+    const t = document.querySelector('[name=transport]:checked').value;
+    const f = document.querySelector('[name=food]:checked').value;
+    const ac = document.querySelector('[name=activity]:checked').value;
 
-  const tips = [
-    "Free activities can significantly reduce weekend costs.",
-    "Limiting meals out keeps budgets under control.",
-    "Walking or cycling eliminates transport costs."
-  ];
-  insight.textContent = tips[Math.floor(Math.random() * tips.length)];
-}
+    let transport = t === "drive" ? 20 : t === "ferry" ? (a*30 + k*15) : 0;
+    let food = f === "one" ? (a*30 + k*15) : f === "multi" ? (a*60 + k*30) : 0;
+    let act = ac === "one" ? (a*25 + k*15) : ac === "multi" ? (a*50 + k*30) : 0;
+
+    calcData.total = transport + food + act;
+    calcData.transport = transport;
+    calcData.food = food;
+    calcData.activity = act;
+    calcData.people = a + k;
+
+    form.classList.add("hidden");
+    gate.classList.remove("hidden");
+  }
+
+  function unlock() {
+    if (!email.value.includes("@")) {
+      alert("Please enter a valid email");
+      return;
+    }
+
+    sendAdminEmail(email.value); // 🔔 EMAIL SENT TO YOU
+
+    gate.classList.add("hidden");
+    results.style.display = "block";
+
+    total.textContent = `$${calcData.total.toFixed(2)}`;
+    total2.textContent = `$${calcData.total.toFixed(2)}`;
+    tCost.textContent = `$${calcData.transport.toFixed(2)}`;
+    fCost.textContent = `$${calcData.food.toFixed(2)}`;
+    aCost.textContent = `$${calcData.activity.toFixed(2)}`;
+    pp.textContent = `$${(calcData.total / calcData.people).toFixed(2)}`;
+
+    const tips = [
+      "Free activities can significantly reduce weekend costs.",
+      "Limiting meals out keeps budgets under control.",
+      "Walking or cycling eliminates transport costs."
+    ];
+    insight.textContent = tips[Math.floor(Math.random() * tips.length)];
+  }
 </script>
 
 </body>
