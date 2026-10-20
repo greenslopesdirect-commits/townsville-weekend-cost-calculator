@@ -67,6 +67,18 @@
       font-size: 1rem;
     }
 
+    .optin {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      margin: 12px 0;
+      text-align: left;
+      font-size: 0.95rem;
+      cursor: pointer;
+    }
+
+    .optin input { margin-top: 3px; }
+
     .radio-group label {
       display: flex;
       align-items: center;
@@ -204,6 +216,10 @@
     </div>
     <p>Enter your email to unlock your full breakdown.</p>
     <input type="email" id="email" placeholder="you@example.com">
+    <label class="optin">
+      <input type="checkbox" id="newsletter">
+      <span>Email me what's on in Townsville each week (unsubscribe anytime)</span>
+    </label>
     <button class="success" onclick="unlock()">Unlock My Cost Breakdown</button>
     <p class="small">We'll use this to show your result and let the site owner know the calculator was used. See our <a href="https://www.townsvilleguide.com.au/privacy-policy" target="_blank" rel="noopener noreferrer">privacy policy</a>.</p>
   </div>
@@ -232,12 +248,15 @@
   // =====================
   // EMAIL FUNCTION
   // =====================
-  function sendAdminEmail(userEmail) {
+  function sendAdminEmail(userEmail, newsletterOptIn) {
+    const optIn = newsletterOptIn ? "Yes" : "No";
     emailjs.send(
       "service_mik5ipd",      // YOUR SERVICE ID
       "template_gpudrac",     // YOUR TEMPLATE ID
       {
         user_email: userEmail,
+        newsletter_optin: optIn,
+        message: "Newsletter opt-in: " + optIn,
         time: new Date().toLocaleString()
       }
     ).then(
@@ -278,7 +297,8 @@
       return;
     }
 
-    sendAdminEmail(email.value); // 🔔 EMAIL SENT TO YOU
+    // The newsletter box is optional and does not change how the calculator works.
+    sendAdminEmail(email.value, document.getElementById("newsletter").checked); // 🔔 EMAIL SENT TO YOU
 
     gate.classList.add("hidden");
     results.style.display = "block";
